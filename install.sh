@@ -14,13 +14,12 @@ printf "${BLUE}Developer By Mrcode Technologi. from Tanzania${RESET}\n\n"
 printf "${YELLOW}Updating all Termux packages first to keep native libraries compatible...${RESET}\n"
 pkg update -y
 pkg upgrade -y
-pkg install -y python ffmpeg
 
 # Finish any package configuration left incomplete by a previous interrupted
 # upgrade, then repair dependencies if Termux reports a broken package state.
 dpkg --configure -a || true
 apt-get -f install -y || true
-pkg install -y ffmpeg
+pkg install -y python ffmpeg
 python -m pip install --upgrade yt-dlp
 
 # Ruhusu kuhifadhi faili kwenye Downloads ya simu.
