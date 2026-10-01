@@ -79,3 +79,5 @@ pkg install ffmpeg
 **Instagram/Facebook/TikTok inakataa URL**
 
 Hakikisha video ni public, URL haijakatika, na `yt-dlp` imepitwa na wakati. Baadhi ya videos zinahitaji login/cookies na hazita-download bila uthibitisho huo.
+
+Mrcodex1 tanzania
