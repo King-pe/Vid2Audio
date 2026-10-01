@@ -88,11 +88,6 @@ pkg install ffmpeg
 
 ### Instagram, Facebook, or TikTok URL fails
 
-<<<<<<< HEAD
-Hakikisha video ni public, URL haijakatika, na `yt-dlp` imepitwa na wakati. Baadhi ya videos zinahitaji login/cookies na hazita-download bila uthibitisho huo.
-
-Mrcodex1 tanzania
-=======
 Make sure the URL is complete and the video is public. Update yt-dlp and try again:
 
 ```bash
@@ -110,4 +105,3 @@ Some videos require login cookies or have download restrictions and may not work
 ## License and Responsible Use
 
 Use this tool responsibly. Respect copyright, privacy, terms of service, and the rights of content creators.
->>>>>>> 6873713 (Rewrite README in English)
