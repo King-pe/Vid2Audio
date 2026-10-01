@@ -75,8 +75,10 @@ The video downloader uses MP4 when available and enables concurrent fragments fo
 Keep yt-dlp updated for the best platform compatibility:
 
 ```bash
-python -m pip install --upgrade yt-dlp
+python -m pip install --upgrade --pre "yt-dlp[default]"
 ```
+
+The installer uses the yt-dlp nightly channel because social platforms can change their page format before the stable release receives an extractor fix.
 
 ## Important Notes
 
@@ -144,10 +146,19 @@ bash vid2audio.sh
 Make sure the URL is complete and the video is public. Update yt-dlp and try again:
 
 ```bash
-python -m pip install --upgrade yt-dlp
+python -m pip install --upgrade --pre "yt-dlp[default]"
 ```
 
-Some videos require login cookies or have download restrictions and may not work with a public URL.
+For a Facebook error such as `Cannot parse data`, update to nightly and try the same public URL again:
+
+```bash
+cd ~/Vid2Audio
+git pull
+python -m pip install --upgrade --pre "yt-dlp[default]"
+bash vid2audio.sh
+```
+
+If the error continues after updating, the Reel may require Facebook login cookies, be age-restricted, or be blocked for your account/region. Vid2Audio cannot bypass private or access-restricted content; try a different public Reel.
 
 ## Project Files
 

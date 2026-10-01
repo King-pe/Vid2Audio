@@ -154,7 +154,13 @@ download_video() {
     else
         printf "\n"
         say_error "Video download failed. Check that the URL is correct and public."
-        printf "${YELLOW}Some sites require login cookies or may block downloads.${RESET}\n"
+        if [ "$platform" = "facebook" ]; then
+            printf "${YELLOW}Facebook changed its page format. Update yt-dlp with:${RESET}\n"
+            printf "${CYAN}python -m pip install --upgrade --pre \"yt-dlp[default]\"${RESET}\n"
+            printf "${YELLOW}If it still fails, this Reel may require login cookies or be restricted.${RESET}\n"
+        else
+            printf "${YELLOW}Some sites require login cookies or may block downloads.${RESET}\n"
+        fi
     fi
 }
 

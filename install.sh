@@ -20,7 +20,8 @@ pkg upgrade -y
 dpkg --configure -a || true
 apt-get -f install -y || true
 pkg install -y python ffmpeg
-python -m pip install --upgrade yt-dlp
+# Nightly receives extractor fixes earlier when social platforms change.
+python -m pip install --upgrade --pre "yt-dlp[default]"
 
 # Ruhusu kuhifadhi faili kwenye Downloads ya simu.
 if command -v termux-setup-storage >/dev/null 2>&1; then
