@@ -86,6 +86,7 @@ python -m pip install --upgrade yt-dlp
 - FFmpeg is used to convert the video to high-quality MP3 audio.
 - Video downloads use yt-dlp and are saved separately from MP3 files in the `Videos` folder.
 - The **Other website / browser URL** option works only for websites supported by yt-dlp.
+- Filenames are automatically shortened to prevent Android's `File name too long` error.
 - Platform changes can temporarily affect downloading. Updating yt-dlp may fix compatibility problems.
 
 ## Troubleshooting
@@ -100,6 +101,18 @@ python -m pip install --upgrade yt-dlp
 
 ```bash
 pkg install ffmpeg
+```
+
+FFmpeg is required for MP3 conversion and for combining separate video and audio streams. If FFmpeg is not installed, the video downloader automatically requests a single combined MP4 format when the website provides one.
+
+### `File name too long`
+
+The downloader automatically limits output filenames and adds the video ID. Update the tool before trying again:
+
+```bash
+cd ~/Vid2Audio
+git pull
+bash vid2audio.sh
 ```
 
 ### Instagram, Facebook, or TikTok URL fails

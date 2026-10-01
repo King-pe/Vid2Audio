@@ -38,12 +38,15 @@ say_ok() { printf "${GREEN}✓ %s${RESET}\n" "$1"; }
 check_dependencies() {
     local missing=()
     command -v yt-dlp >/dev/null 2>&1 || missing+=("yt-dlp")
-    command -v ffmpeg >/dev/null 2>&1 || missing+=("ffmpeg")
 
     if [ "${#missing[@]}" -gt 0 ]; then
         say_error "Missing dependencies: ${missing[*]}"
         printf "${YELLOW}Run the installer with:${RESET} bash install.sh\n"
         exit 1
+    fi
+
+    if ! command -v ffmpeg >/dev/null 2>&1; then
+        printf "${YELLOW}Warning: ffmpeg is not installed. Video downloads will use one MP4 format; audio conversion needs ffmpeg.${RESET}\n"
     fi
 
     mkdir -p "$DOWNLOAD_DIR" "$VIDEO_DOWNLOAD_DIR"
@@ -81,6 +84,12 @@ download_audio() {
     printf "\n${CYAN}Downloading audio from ${WHITE}%s${CYAN}...${RESET}\n" "$name"
     printf "${YELLOW}Please wait; longer videos may take more time.${RESET}\n\n"
 
+    if ! command -v ffmpeg >/dev/null 2>&1; then
+        say_error "ffmpeg is required for MP3 conversion."
+        printf "${YELLOW}Install it with: pkg install ffmpeg${RESET}\n"
+        return 1
+    fi
+
     # --no-playlist: URL moja hubadilishwa, si playlist nzima.
     # -x + mp3: yt-dlp hutumia ffmpeg kubadilisha video kuwa audio.
     if yt-dlp \
@@ -93,7 +102,8 @@ download_audio() {
         --audio-quality 0 \
         --embed-thumbnail \
         --add-metadata \
-        -o "${DOWNLOAD_DIR}/%(title)s.%(ext)s" \
+        --trim-filenames 140 \
+        -o "${DOWNLOAD_DIR}/%(title).120s-%(id)s.%(ext)s" \
         "$url"; then
         printf "\n${GREEN}✓ Audio conversion completed!${RESET}\n"
         printf "${WHITE}Saved to:${RESET}\n${CYAN}%s${RESET}\n" "$DOWNLOAD_DIR"
@@ -109,21 +119,30 @@ download_video() {
     local platform="$1"
     local url="$2"
     local name
+    local format
     name="$(platform_name "$platform")"
 
     printf "\n${CYAN}Downloading video from ${WHITE}%s${CYAN}...${RESET}\n" "$name"
     printf "${YELLOW}Using fast multi-fragment download where supported.${RESET}\n\n"
 
-    # Prefer MP4 and merge video/audio with ffmpeg. --concurrent-fragments
-    # can improve speed on servers that support parallel fragment downloads.
+    # Use separate video/audio streams when ffmpeg is available. Without
+    # ffmpeg, request one combined MP4 stream so the download still works.
+    if command -v ffmpeg >/dev/null 2>&1; then
+        format="bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/b"
+    else
+        format="b[ext=mp4]/b"
+    fi
+
+    # --concurrent-fragments can improve speed on supported servers.
     if yt-dlp \
         --no-playlist \
         --restrict-filenames \
         --newline \
         --concurrent-fragments 4 \
-        --format "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/b" \
+        --format "$format" \
         --merge-output-format mp4 \
-        -o "${VIDEO_DOWNLOAD_DIR}/%(title)s.%(ext)s" \
+        --trim-filenames 140 \
+        -o "${VIDEO_DOWNLOAD_DIR}/%(title).120s-%(id)s.%(ext)s" \
         "$url"; then
         printf "\n${GREEN}✓ Video download completed!${RESET}\n"
         printf "${WHITE}Saved to:${RESET}\n${CYAN}%s${RESET}\n" "$VIDEO_DOWNLOAD_DIR"
