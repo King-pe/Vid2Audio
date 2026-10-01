@@ -8,6 +8,7 @@ set -u
 APP_NAME="Vid2Audio"
 VERSION="1.0.0"
 DOWNLOAD_DIR="${HOME}/storage/downloads/Vid2Audio"
+VIDEO_DOWNLOAD_DIR="${DOWNLOAD_DIR}/Videos"
 
 # Rangi za brand: kijani + blue
 GREEN='\033[1;32m'
@@ -40,12 +41,12 @@ check_dependencies() {
     command -v ffmpeg >/dev/null 2>&1 || missing+=("ffmpeg")
 
     if [ "${#missing[@]}" -gt 0 ]; then
-        say_error "Programu hizi hazipo: ${missing[*]}"
-        printf "${YELLOW}Endesha installer kwa kuandika:${RESET} bash install.sh\n"
+        say_error "Missing dependencies: ${missing[*]}"
+        printf "${YELLOW}Run the installer with:${RESET} bash install.sh\n"
         exit 1
     fi
 
-    mkdir -p "$DOWNLOAD_DIR"
+    mkdir -p "$DOWNLOAD_DIR" "$VIDEO_DOWNLOAD_DIR"
 }
 
 is_supported_url() {
@@ -56,6 +57,7 @@ is_supported_url() {
         facebook)  [[ "$url" =~ ^https?://(www\.)?(facebook\.com|fb\.watch)/ ]] ;;
         instagram) [[ "$url" =~ ^https?://(www\.)?instagram\.com/ ]] ;;
         tiktok)    [[ "$url" =~ ^https?://(www\.)?(www\.)?tiktok\.com/ ]] ;;
+        other)     [[ "$url" =~ ^https?:// ]] ;;
         *)         return 1 ;;
     esac
 }
@@ -66,6 +68,7 @@ platform_name() {
         facebook) echo "Facebook Reels" ;;
         instagram) echo "Instagram video/reels" ;;
         tiktok) echo "TikTok video" ;;
+        other) echo "Other website/browser link" ;;
     esac
 }
 
@@ -75,8 +78,8 @@ download_audio() {
     local name
     name="$(platform_name "$platform")"
 
-    printf "\n${CYAN}Inapakua kutoka ${WHITE}%s${CYAN}...${RESET}\n" "$name"
-    printf "${YELLOW}Subiri kidogo; video ndefu inaweza kuchukua muda.${RESET}\n\n"
+    printf "\n${CYAN}Downloading audio from ${WHITE}%s${CYAN}...${RESET}\n" "$name"
+    printf "${YELLOW}Please wait; longer videos may take more time.${RESET}\n\n"
 
     # --no-playlist: URL moja hubadilishwa, si playlist nzima.
     # -x + mp3: yt-dlp hutumia ffmpeg kubadilisha video kuwa audio.
@@ -92,39 +95,66 @@ download_audio() {
         --add-metadata \
         -o "${DOWNLOAD_DIR}/%(title)s.%(ext)s" \
         "$url"; then
-        printf "\n${GREEN}✓ Imekamilika!${RESET}\n"
-        printf "${WHITE}Faili yako ipo hapa:${RESET}\n${CYAN}%s${RESET}\n" "$DOWNLOAD_DIR"
-        printf "${YELLOW}Kufungua folder: termux-open \"%s\"${RESET}\n" "$DOWNLOAD_DIR"
+        printf "\n${GREEN}✓ Audio conversion completed!${RESET}\n"
+        printf "${WHITE}Saved to:${RESET}\n${CYAN}%s${RESET}\n" "$DOWNLOAD_DIR"
+        printf "${YELLOW}Open folder: termux-open \"%s\"${RESET}\n" "$DOWNLOAD_DIR"
     else
         printf "\n"
-        say_error "Imeshindikana kubadilisha URL hii. Hakikisha URL ni sahihi na video iko public."
-        printf "${YELLOW}Kwa Instagram/Facebook/TikTok, video yenye login/private inaweza kuhitaji cookies.${RESET}\n"
+        say_error "Audio conversion failed. Check that the URL is correct and public."
+        printf "${YELLOW}Instagram, Facebook, and TikTok videos may require login cookies.${RESET}\n"
     fi
 }
 
-choose_platform() {
+download_video() {
+    local platform="$1"
+    local url="$2"
+    local name
+    name="$(platform_name "$platform")"
+
+    printf "\n${CYAN}Downloading video from ${WHITE}%s${CYAN}...${RESET}\n" "$name"
+    printf "${YELLOW}Using fast multi-fragment download where supported.${RESET}\n\n"
+
+    # Prefer MP4 and merge video/audio with ffmpeg. --concurrent-fragments
+    # can improve speed on servers that support parallel fragment downloads.
+    if yt-dlp \
+        --no-playlist \
+        --restrict-filenames \
+        --newline \
+        --concurrent-fragments 4 \
+        --format "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/b" \
+        --merge-output-format mp4 \
+        -o "${VIDEO_DOWNLOAD_DIR}/%(title)s.%(ext)s" \
+        "$url"; then
+        printf "\n${GREEN}✓ Video download completed!${RESET}\n"
+        printf "${WHITE}Saved to:${RESET}\n${CYAN}%s${RESET}\n" "$VIDEO_DOWNLOAD_DIR"
+        printf "${YELLOW}Open folder: termux-open \"%s\"${RESET}\n" "$VIDEO_DOWNLOAD_DIR"
+    else
+        printf "\n"
+        say_error "Video download failed. Check that the URL is correct and public."
+        printf "${YELLOW}Some sites require login cookies or may block downloads.${RESET}\n"
+    fi
+}
+
+choose_audio_platform() {
     local choice platform prompt url
     while true; do
         print_banner
-        printf "${GREEN}Chagua aina ya link:${RESET}\n\n"
+        printf "${GREEN}Convert video to MP3:${RESET}\n\n"
         printf "${BLUE}1${RESET}) YouTube\n"
         printf "${BLUE}2${RESET}) Facebook Reels\n"
         printf "${BLUE}3${RESET}) Instagram video / Reels\n"
         printf "${BLUE}4${RESET}) TikTok video\n"
-        printf "${BLUE}5${RESET}) Toka\n\n"
-        read -r -p "Chagua (1-5): " choice
+        printf "${BLUE}5${RESET}) Back\n\n"
+        read -r -p "Choose (1-5): " choice
 
         case "$choice" in
-            1) platform="youtube"; prompt="Weka YouTube URL" ;;
-            2) platform="facebook"; prompt="Weka Facebook Reels URL" ;;
-            3) platform="instagram"; prompt="Weka Instagram video/Reels URL" ;;
-            4) platform="tiktok"; prompt="Weka TikTok URL" ;;
-            5)
-                printf "${GREEN}Asante kwa kutumia ${WHITE}${APP_NAME}${GREEN}!${RESET}\n"
-                exit 0
-                ;;
+            1) platform="youtube"; prompt="Enter YouTube URL" ;;
+            2) platform="facebook"; prompt="Enter Facebook Reels URL" ;;
+            3) platform="instagram"; prompt="Enter Instagram video/Reels URL" ;;
+            4) platform="tiktok"; prompt="Enter TikTok URL" ;;
+            5) return ;;
             *)
-                say_error "Chaguo si sahihi. Tumia 1, 2, 3, 4 au 5."
+                say_error "Invalid choice. Use 1, 2, 3, 4, or 5."
                 sleep 1
                 continue
                 ;;
@@ -135,23 +165,97 @@ choose_platform() {
         url="$(printf '%s' "$url" | sed 's/^['\''"]//; s/['\''"]$//')"
 
         if [ -z "$url" ]; then
-            say_error "URL haijawekwa."
+            say_error "No URL was entered."
             sleep 1
             continue
         fi
 
         if ! is_supported_url "$platform" "$url"; then
-            say_error "Hii si URL ya $(platform_name "$platform")."
-            printf "${YELLOW}Rudia kwa kuweka URL sahihi ya platform uliyochagua.${RESET}\n"
+            say_error "This is not a valid $(platform_name "$platform") URL."
+            printf "${YELLOW}Enter a valid URL for the platform you selected.${RESET}\n"
             sleep 2
             continue
         fi
 
         download_audio "$platform" "$url"
-        printf "\n${CYAN}Bonyeza Enter kurudi kwenye menu...${RESET}"
+        printf "\n${CYAN}Press Enter to return to the audio menu...${RESET}"
         read -r
     done
 }
 
+choose_video_platform() {
+    local choice platform prompt url
+    while true; do
+        print_banner
+        printf "${GREEN}Download video:${RESET}\n\n"
+        printf "${BLUE}1${RESET}) YouTube\n"
+        printf "${BLUE}2${RESET}) Facebook / Facebook Reels\n"
+        printf "${BLUE}3${RESET}) Instagram video / Reels\n"
+        printf "${BLUE}4${RESET}) TikTok video\n"
+        printf "${BLUE}5${RESET}) Other website / browser URL\n"
+        printf "${BLUE}6${RESET}) Back\n\n"
+        read -r -p "Choose (1-6): " choice
+
+        case "$choice" in
+            1) platform="youtube"; prompt="Enter YouTube URL" ;;
+            2) platform="facebook"; prompt="Enter Facebook URL" ;;
+            3) platform="instagram"; prompt="Enter Instagram URL" ;;
+            4) platform="tiktok"; prompt="Enter TikTok URL" ;;
+            5) platform="other"; prompt="Enter video URL" ;;
+            6) return ;;
+            *)
+                say_error "Invalid choice. Use 1, 2, 3, 4, 5, or 6."
+                sleep 1
+                continue
+                ;;
+        esac
+
+        printf "\n${CYAN}%s:${RESET} " "$prompt"
+        read -r url
+        url="$(printf '%s' "$url" | sed 's/^['\''"]//; s/['\''"]$//')"
+
+        if [ -z "$url" ]; then
+            say_error "No URL was entered."
+            sleep 1
+            continue
+        fi
+
+        if ! is_supported_url "$platform" "$url"; then
+            say_error "Please enter a valid HTTP/HTTPS URL."
+            sleep 2
+            continue
+        fi
+
+        download_video "$platform" "$url"
+        printf "\n${CYAN}Press Enter to return to the video menu...${RESET}"
+        read -r
+    done
+}
+
+main_menu() {
+    local choice
+    while true; do
+        print_banner
+        printf "${GREEN}Choose an action:${RESET}\n\n"
+        printf "${BLUE}1${RESET}) Convert video to MP3 audio\n"
+        printf "${BLUE}2${RESET}) Download video\n"
+        printf "${BLUE}3${RESET}) Exit\n\n"
+        read -r -p "Choose (1-3): " choice
+
+        case "$choice" in
+            1) choose_audio_platform ;;
+            2) choose_video_platform ;;
+            3)
+                printf "${GREEN}Thank you for using ${WHITE}${APP_NAME}${GREEN}!${RESET}\n"
+                exit 0
+                ;;
+            *)
+                say_error "Invalid choice. Use 1, 2, or 3."
+                sleep 1
+                ;;
+        esac
+    done
+}
+
 check_dependencies
-choose_platform
+main_menu

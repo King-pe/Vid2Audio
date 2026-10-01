@@ -5,12 +5,18 @@
 > **Developer By Mrcode Technologi. from Tanzania**
 > **Mrcodex1 Tanzania**
 
-Vid2Audio lets users choose a supported platform, enter one public video URL, convert the video to MP3, and save the audio directly to the phone.
+Vid2Audio lets users choose between converting a video to MP3 or downloading the original video file. Users can enter one public URL from a supported platform or another website.
 
 Downloaded files are saved in:
 
 ```text
 ~/storage/downloads/Vid2Audio
+```
+
+Downloaded videos are saved in:
+
+```text
+~/storage/downloads/Vid2Audio/Videos
 ```
 
 ## Supported Platforms
@@ -19,6 +25,8 @@ Downloaded files are saved in:
 2. Facebook Reels
 3. Instagram videos and Reels
 4. TikTok videos
+
+The video downloader also supports **Other website / browser URL** when yt-dlp supports the website.
 
 ## Installation on Termux
 
@@ -54,7 +62,12 @@ chmod +x vid2audio.sh
 ./vid2audio.sh
 ```
 
-Use the menu to select a platform, paste one public video URL, and wait for the MP3 conversion to finish.
+Use the main menu to choose one of these actions:
+
+1. **Convert video to MP3 audio** — saves MP3 files in `~/storage/downloads/Vid2Audio`.
+2. **Download video** — saves MP4/video files in `~/storage/downloads/Vid2Audio/Videos`.
+
+The video downloader uses MP4 when available and enables concurrent fragments for faster downloads on servers that support it. Paste one public video URL and wait for the download to finish.
 
 ## Updating yt-dlp
 
@@ -70,6 +83,8 @@ python -m pip install --upgrade yt-dlp
 - Use public URLs. Private videos or videos requiring login may not download.
 - Vid2Audio processes one URL at a time and does not download entire playlists.
 - FFmpeg is used to convert the video to high-quality MP3 audio.
+- Video downloads use yt-dlp and are saved separately from MP3 files in the `Videos` folder.
+- The **Other website / browser URL** option works only for websites supported by yt-dlp.
 - Platform changes can temporarily affect downloading. Updating yt-dlp may fix compatibility problems.
 
 ## Troubleshooting
@@ -98,7 +113,7 @@ Some videos require login cookies or have download restrictions and may not work
 
 ## Project Files
 
-- `vid2audio.sh` — Main interactive downloader and MP3 converter.
+- `vid2audio.sh` — Main interactive MP3 converter and video downloader.
 - `install.sh` — Termux dependency installer and storage setup script.
 - `.gitignore` — Prevents downloaded audio files from being committed.
 
