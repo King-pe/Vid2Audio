@@ -20,11 +20,15 @@ RESET='\033[0m'
 
 print_banner() {
     clear 2>/dev/null || true
-    printf "${GREEN}==============================================${RESET}\n"
-    printf "${GREEN}              ${WHITE}V${BLUE}id2${GREEN}A${BLUE}udio${RESET}\n"
-    printf "${CYAN}        Video to MP3 — Termux Tool${RESET}\n"
-    printf "${WHITE} Developer By Mrcode Technologi. from Tanzania${RESET}\n"
-    printf "${GREEN}==============================================${RESET}\n\n"
+    printf "${GREEN} __     ___     _ ____     _             _ _       ${RESET}\n"
+    printf "${GREEN} \\ \\   / (*) __| |__* \\   / \\  _   _  _*| (*) ___  ${RESET}\n"
+    printf "${GREEN}  \\ \\ / /| |/ _\` | __) | / _ \\| | | |/ _\` | |/ _ \\ ${RESET}\n"
+    printf "${BLUE}   \\ V / | | (*| | /_/ / ___ \\ || | (_| | | (*) |${RESET}\n"
+    printf "${BLUE}    \\_/  |_|\\_,*|_____/     \\_\\_*,*|\\_,*|_|\\___/ ${RESET}\n"
+    printf "\n"
+    printf "${GREEN}✴.·´¯\`·.·★  ${WHITE}🎀𝓥𝓲𝓭2𝓐𝓾𝓭𝓲𝓸🎀  ${GREEN}★·.·\`¯´·.✴${RESET}\n"
+    printf "${CYAN}              Video to MP3 — Termux Tool${RESET}\n"
+    printf "${WHITE}      Developer By Mrcode Technologi. from Tanzania${RESET}\n\n"
 }
 
 say_error() { printf "${RED}✗ %s${RESET}\n" "$1"; }
