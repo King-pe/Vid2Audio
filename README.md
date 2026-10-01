@@ -23,15 +23,15 @@ Vid2Audio inaruhusu mtumiaji kuchagua aina ya link, kuweka URL moja, kuibadilish
 pkg update -y
 pkg install -y git
 cd ~
-git clone https://github.com/King-pe/lcode-ai.git
-cd lcode-ai/vid2audio
+git clone https://github.com/King-pe/Vid2Audio.git
+cd Vid2Audio
 bash install.sh
 ```
 
-Kama tayari una project hii, tumia tu:
+Kama tayari ume-clone repository hii, tumia tu:
 
 ```bash
-cd /path/ya/lcode-ai/vid2audio
+cd /path/ya/Vid2Audio
 bash install.sh
 ```
 
