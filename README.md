@@ -105,6 +105,30 @@ pkg install ffmpeg
 
 FFmpeg is required for MP3 conversion and for combining separate video and audio streams. If FFmpeg is not installed, the video downloader automatically requests a single combined MP4 format when the website provides one.
 
+### `CANNOT LINK EXECUTABLE "ffmpeg"` or package configuration fails
+
+This usually means that Termux packages were only partially upgraded and native libraries are from different versions. Upgrade all packages before reinstalling FFmpeg:
+
+```bash
+pkg update -y
+pkg upgrade -y
+dpkg --configure -a
+apt-get -f install -y
+pkg install --reinstall ffmpeg
+ffmpeg -version
+```
+
+If Termux reports that no mirror is selected, choose a mirror first and then repeat the commands:
+
+```bash
+termux-change-repo
+pkg update -y
+pkg upgrade -y
+pkg install --reinstall ffmpeg
+```
+
+Do not only run `pkg install ffmpeg` when this linker error appears; the complete package upgrade is needed to synchronize libraries such as `libplacebo`.
+
 ### `File name too long`
 
 The downloader automatically limits output filenames and adds the video ID. Update the tool before trying again:

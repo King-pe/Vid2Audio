@@ -35,6 +35,10 @@ print_banner() {
 say_error() { printf "${RED}✗ %s${RESET}\n" "$1"; }
 say_ok() { printf "${GREEN}✓ %s${RESET}\n" "$1"; }
 
+has_working_ffmpeg() {
+    command -v ffmpeg >/dev/null 2>&1 && ffmpeg -version >/dev/null 2>&1
+}
+
 check_dependencies() {
     local missing=()
     command -v yt-dlp >/dev/null 2>&1 || missing+=("yt-dlp")
@@ -45,8 +49,8 @@ check_dependencies() {
         exit 1
     fi
 
-    if ! command -v ffmpeg >/dev/null 2>&1; then
-        printf "${YELLOW}Warning: ffmpeg is not installed. Video downloads will use one MP4 format; audio conversion needs ffmpeg.${RESET}\n"
+    if ! has_working_ffmpeg; then
+        printf "${YELLOW}Warning: ffmpeg is missing or broken. Video downloads will use one MP4 format; audio conversion needs a working ffmpeg.${RESET}\n"
     fi
 
     mkdir -p "$DOWNLOAD_DIR" "$VIDEO_DOWNLOAD_DIR"
@@ -84,9 +88,9 @@ download_audio() {
     printf "\n${CYAN}Downloading audio from ${WHITE}%s${CYAN}...${RESET}\n" "$name"
     printf "${YELLOW}Please wait; longer videos may take more time.${RESET}\n\n"
 
-    if ! command -v ffmpeg >/dev/null 2>&1; then
-        say_error "ffmpeg is required for MP3 conversion."
-        printf "${YELLOW}Install it with: pkg install ffmpeg${RESET}\n"
+    if ! has_working_ffmpeg; then
+        say_error "A working ffmpeg is required for MP3 conversion."
+        printf "${YELLOW}Repair it with: pkg upgrade -y && pkg install --reinstall ffmpeg${RESET}\n"
         return 1
     fi
 
@@ -127,7 +131,7 @@ download_video() {
 
     # Use separate video/audio streams when ffmpeg is available. Without
     # ffmpeg, request one combined MP4 stream so the download still works.
-    if command -v ffmpeg >/dev/null 2>&1; then
+    if has_working_ffmpeg; then
         format="bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/b"
     else
         format="b[ext=mp4]/b"
