@@ -68,7 +68,7 @@ Use the main menu to choose one of these actions:
 1. **Convert video to MP3 audio** — saves MP3 files in `~/storage/downloads/Vid2Audio`.
 2. **Download video** — saves MP4/video files in `~/storage/downloads/Vid2Audio/Videos`.
 
-The video downloader uses MP4 when available and enables concurrent fragments for faster downloads on servers that support it. Paste one public video URL and wait for the download to finish.
+The video downloader selects a real video stream and an audio stream, then combines them into an MP4 using FFmpeg. It enables concurrent fragments for faster downloads on servers that support it. Paste one public video URL and wait for the download to finish.
 
 ## Updating yt-dlp
 
@@ -86,6 +86,7 @@ The installer uses the yt-dlp nightly channel because social platforms can chang
 - Use public URLs. Private videos or videos requiring login may not download.
 - Vid2Audio processes one URL at a time and does not download entire playlists.
 - FFmpeg is used to convert the video to high-quality MP3 audio.
+- FFmpeg is also used to combine the downloaded video and audio streams so the final file can be watched with sound.
 - Video downloads use yt-dlp and are saved separately from MP3 files in the `Videos` folder.
 - The **Other website / browser URL** option works only for websites supported by yt-dlp.
 - Filenames are automatically shortened to prevent Android's `File name too long` error.

@@ -129,12 +129,13 @@ download_video() {
     printf "\n${CYAN}Downloading video from ${WHITE}%s${CYAN}...${RESET}\n" "$name"
     printf "${YELLOW}Using fast multi-fragment download where supported.${RESET}\n\n"
 
-    # Use separate video/audio streams when ffmpeg is available. Without
-    # ffmpeg, request one combined MP4 stream so the download still works.
+    # Prefer a real video+audio result. When ffmpeg is available, combine the
+    # best video and audio streams. Without ffmpeg, only select a format that
+    # already contains both video and audio; never silently choose audio-only.
     if has_working_ffmpeg; then
-        format="bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/b"
+        format="bestvideo*+bestaudio/best"
     else
-        format="b[ext=mp4]/b"
+        format="best[vcodec!=none][acodec!=none]/best[acodec!=none][vcodec!=none]"
     fi
 
     # --concurrent-fragments can improve speed on supported servers.
