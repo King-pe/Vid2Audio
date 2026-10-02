@@ -70,6 +70,18 @@ Use the main menu to choose one of these actions:
 
 The video downloader selects a real video stream and an audio stream, then combines them into an MP4 using FFmpeg. It enables concurrent fragments for faster downloads on servers that support it. Paste one public video URL and wait for the download to finish.
 
+Before downloading, choose the maximum video resolution from the quality menu:
+
+- Auto / Best available
+- 2160p (4K)
+- 1440p (2K)
+- 1080p (Full HD)
+- 720p (HD)
+- 480p
+- 360p
+
+If the selected resolution is not available, yt-dlp chooses the best lower resolution available.
+
 ## Updating yt-dlp
 
 Keep yt-dlp updated for the best platform compatibility:

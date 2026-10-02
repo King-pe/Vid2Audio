@@ -122,6 +122,7 @@ download_audio() {
 download_video() {
     local platform="$1"
     local url="$2"
+    local resolution="$3"
     local name
     local format
     name="$(platform_name "$platform")"
@@ -133,9 +134,17 @@ download_video() {
     # best video and audio streams. Without ffmpeg, only select a format that
     # already contains both video and audio; never silently choose audio-only.
     if has_working_ffmpeg; then
-        format="bestvideo*+bestaudio/best"
+        if [ "$resolution" = "best" ]; then
+            format="bestvideo*+bestaudio/best"
+        else
+            format="bestvideo*[height<=${resolution}]+bestaudio/best[height<=${resolution}]"
+        fi
     else
-        format="best[vcodec!=none][acodec!=none]/best[acodec!=none][vcodec!=none]"
+        if [ "$resolution" = "best" ]; then
+            format="best[vcodec!=none][acodec!=none]/best[acodec!=none][vcodec!=none]"
+        else
+            format="best[height<=${resolution}][vcodec!=none][acodec!=none]/best[height<=${resolution}][acodec!=none][vcodec!=none]"
+        fi
     fi
 
     # --concurrent-fragments can improve speed on supported servers.
@@ -163,6 +172,35 @@ download_video() {
             printf "${YELLOW}Some sites require login cookies or may block downloads.${RESET}\n"
         fi
     fi
+}
+
+select_resolution() {
+    local choice
+    while true; do
+        printf "\n${GREEN}Choose video quality:${RESET}\n\n"
+        printf "${BLUE}1${RESET}) Auto / Best available\n"
+        printf "${BLUE}2${RESET}) 2160p (4K)\n"
+        printf "${BLUE}3${RESET}) 1440p (2K)\n"
+        printf "${BLUE}4${RESET}) 1080p (Full HD)\n"
+        printf "${BLUE}5${RESET}) 720p (HD)\n"
+        printf "${BLUE}6${RESET}) 480p\n"
+        printf "${BLUE}7${RESET}) 360p\n\n"
+        read -r -p "Choose quality (1-7): " choice
+
+        case "$choice" in
+            1) SELECTED_RESOLUTION="best"; return ;;
+            2) SELECTED_RESOLUTION="2160"; return ;;
+            3) SELECTED_RESOLUTION="1440"; return ;;
+            4) SELECTED_RESOLUTION="1080"; return ;;
+            5) SELECTED_RESOLUTION="720"; return ;;
+            6) SELECTED_RESOLUTION="480"; return ;;
+            7) SELECTED_RESOLUTION="360"; return ;;
+            *)
+                say_error "Invalid quality choice. Use a number from 1 to 7."
+                sleep 1
+                ;;
+        esac
+    done
 }
 
 choose_audio_platform() {
@@ -256,7 +294,8 @@ choose_video_platform() {
             continue
         fi
 
-        download_video "$platform" "$url"
+        select_resolution
+        download_video "$platform" "$url" "$SELECTED_RESOLUTION"
         printf "\n${CYAN}Press Enter to return to the video menu...${RESET}"
         read -r
     done
